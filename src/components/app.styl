@@ -1,0 +1,47 @@
+.app
+  width: 100%
+  height: 100%
+  color: black
+  background-color: white
+  .app-header
+    height: 50px
+    line-height: 50px
+    text-align: center 
+    color: rgb(247, 126, 27)
+    .app-logo
+      width: 30px
+      height: 25px
+      vertical-align: middle
+      margin-top: -5px
+    .app-title
+      display: inline-block
+      margin-left: 10px
+      font-size: 18px
+      font-weight: 300
+  .music-tab
+    display: flex
+    height: 30px
+    line-height: 30px
+    text-align: center
+    color: black
+    .tab-item
+      flex: 1
+      .nav-link
+        display: block
+        color: inherit
+        &.active
+            color: rgb(247, 126, 27)
+            border-bottom: 2px solid rgb(247, 126, 27)
+  .music-view
+    position: fixed
+    top: 83px
+    left: 0
+    bottom: 55px // 留给迷你播放器的空间
+    width: 100%
+
+// 子路由动画。这个动画使用的样式会被用在多处，所以把样式写在app.styl中   
+.translate-enter
+  transform: translate3d(100%, 0, 0)
+  &.translate-enter-active
+    transition: transform .3s
+    transform: translate3d(0, 0, 0)
