@@ -41,10 +41,20 @@ A dev server that lints for common errors.
 ![react启动页](./screenshot/react_start.png)
 
 看下文件目录：
-（1）<strong>index.html</strong>：public/index.html 是启动http服务器的首页
-（2）<strong>App.js</strong>：在src下创建一个components文件夹，把App.js和app.css移到此文件夹下
+（1）<strong>index.html</strong>：
+public/index.html 是启动http服务器的首页
+index.html文件包含挂载点：
+```
+<div id="root"></div>
+```
+（2）<strong>App.js</strong>：在src下创建一个components文件夹，把App.js和app.css移到此文件夹下（App.js是主组件）
+
 （3）<strong>index.js</strong>：src/index.js是编译的入口文件
 注：只能叫index这个名字，改别的名字不行，要改得改webpack配置
+index.js文件主要是下面这句：
+``` jsx
+ReactDOM.render(<App />, document.getElementById('root'));
+```
 
 在网站首页右键查看网页源代码，或f12->Source->(index)查看网页源代码，看到 
 \<script type="text/javascript" src="/static/js/bundle.js">\</script>  
@@ -78,13 +88,13 @@ npm i stylus stylus-loader -SD
 	1. 图标放大或缩小不会被拉伸，会保持足够的清晰度
 	2. 颜色可以随意设置。如果使用普通图片，图片颜色已经是设计好的，如果要换颜色需要借助工具来对图片进行修改
 
-制作字体图片首先我们需要svg图片。svg图片可以从<em>iconfont阿里矢量图标库</em>自行选择。笔者已经下载了项目需要的svg图片
+开始制作字体图标：
+制作字体图片首先我们需要svg图片。svg图片可以从<a href="http://www.iconfont.cn">iconfont阿里矢量图标库</a>自行选择。笔者已经下载了项目需要的svg图片
 借助一个叫<em>iconmoon</em>的网站。浏览器地址上输入：icomoon.io/app
-点击上方的Import Icons按钮，选择刚刚下载的svg图片；然后选中所有的图标，点击Generate Font；跳转界面，
+点击上方的Import Icons按钮，选择刚刚下载的svg图片；然后选中所有的图标，点击Generate Font；跳转界面，可设置名字，可以改成icomusic；点击download；下载后是压缩包。
+该压缩包包含了字体图标使用的demo，和生成的字体图标文件及相关样式。
 
-可设置名字，可以改成icomusic；点击download；下载后是压缩包。
-该压缩包包含了字体图片使用的demo，和生成的字体图标文件及相关样式。
-
+应用到项目里：
 在项目src目录下面新建一个assets目录然后再新建一个stylus目录用来放置styl文件，解压压缩包把里面的style.css和fonts文件夹复制出来放置到stylus目录下。
 
 对style.css稍做修改：
@@ -108,21 +118,59 @@ https://c.y.qq.com/musichall/fcgi-bin/fcg_yqqhomepagerecommend.fcg?g_tk=5381&uin
 只取问号前面的部分：
 https://c.y.qq.com/musichall/fcgi-bin/fcg_yqqhomepagerecommend.fcg
 
-在Chrome浏览器调试界面显示区的右上角选择add device type，然后把mobile切换成桌面版刷新（因为最新专辑只有桌面版才有）
+点击Chrome调试界面左上角的第二个图标切换到桌面版（或在Chrome浏览器调试界面显示区的右上角选择add device type，然后把mobile切换成桌面版刷新），因为最新专辑只有桌面版才有
 ![轮播图请求](./screenshot/newsong1.png)
 切换到Header头部：
 ![轮播图请求](./screenshot/newsong2.png)
 <br>
 
-##### 其他
+##### JSONP与Promise
 ES6提供了Promise对象，它可以将异步代码以同步的形式编写
 
 这里接口用的是ajax请求，用这种方式存在跨域限制，前端是不能直接请求的，QQ音乐人性化的基本上大部分接口都支持jsonp请求。为了使用jsonp，这里使用一款<b>jsonp</b>插件，首先安装jsonp依赖
    
     npm install jsonp --save
 
-JSONP原理：动态生成一个\<script\>标签，其src由接口url、请求参数、callback函数名拼接而成，利用\<script\>标签没有跨域限制的特性实现跨域请求。
+插件github地址：https://github.com/webmodules/jsonp
+#### JSONP原理
+动态生成一个\<script\>标签，其src由**接口url**、**请求参数**、**callback函数名**拼接而成，利用\<script\>标签没有跨域限制的特性实现跨域请求。
 
+```
+import originJsonp from "jsonp";
+
+/* 使用ES6的Promise对象将jsonp代码封装成同步代码形式，这个函数返回一个Promise对象 */
+let jsonp = (url, data, option) => {
+    // 在Promise构造函数内调用jsonp，请求成功时调用resolve函数把data的值传出去，请求错误时调用reject函数把err的值传出去。
+    return new Promise((resolve, reject) => {
+        originJsonp(buildUrl(url, data), option, (err, data) => {
+            if (!err) {
+                resolve(data);
+            } else {
+                reject(err);
+            }
+        });
+    });
+};
+
+// 所有的query param通过data加到url后，最后变成xxxx?参数名1=参数值1&参数名2=参数值2这种形式.
+function buildUrl(url,data) {
+    let params = [];
+    for (var k in data) { // 把data遍历放进params数组
+        params.push(`${k}=${encodeURIComponent(data[k])}`); // ES6语法
+    }
+    let param = params.join("&"); // 把数组中的所有元素放入param字符串。
+    if (url.indexOf("?") === -1) { // 没有问号在后面加?和转化后的param字符串
+        url += "?" + param;
+    } else { // 有问号就会有查询字符串，直接在后面加&和转化后的param字符串
+        url += "&" + param;
+    }
+    return url;
+}
+
+export default jsonp;
+```
+
+#### API
 为了养成好的编程习惯呢，通常会把接口请求代码存放到api目录下面，很多人会把接口的url一同写在请求的代码中，这里呢，我们把url抽取出来放到单独的一个文件里面便于管理。
 
 api文件夹下的Recommend.js和song.js多次使用Object.assign()方法.
@@ -183,54 +231,43 @@ export function getAlbumInfo(albumMid) {
 ```
 
 
-发送接口请求在<b>componentDidMount</b>这个生命周期函数中，因为应该在组件挂载完成后进行请求，防止异部操作阻塞UI。
+发送接口请求在<b>componentDidMount</b>这个生命周期函数中，因为应该在**组件挂载完成后进行请求**，防止异部操作阻塞UI。
 关于React的一些生命周期函数：
-一般的，我们会在<b>componentDidMount</b>函数中获取DOM，对DOM进行操作。React每次更新都会调用render函数，使用<b>shouldComponentUpdate</b>可以帮助我们控制组件是否更新，返回true组件会更新，返回false就会阻止更新，这也是性能优化的一种手段。<b>componentWillUnmount</b>通常用来销毁一些资源，比如setInterval、setTimeout函数调用后可以在该周期函数内进行资源释放。
+一般的，我们会在<b>componentDidMount</b>**函数中获取DOM，对DOM进行操作**。React每次更新都会调用render函数，使用<b>shouldComponentUpdate</b>可以帮助我们控制组件是否更新，返回true组件会更新，返回false就会阻止更新，这也是**性能优化**的一种手段。<b>componentWillUnmount</b>通常用来销毁一些资源，比如**setInterval、setTimeout**函数调用后可以在该周期函数内进行资源释放。
+
 
 ##### swiper
 页面轮播使用swiper插件实现，swiper更多用法见官网：www.swiper.com.cn
-
-##### better-scroll
-better-scroll插件是一个移动端滚动插件，基于iscroll重写的。普通的网页滚动效果是很死板的，better-scroll具有拉伸、回弹的效果并且滚动的时候具有惯性，很接近原生体验。better-scroll更多相关内容见github地址：github.com/ustbhuangyi…。better-scroll是利用原生js编写的。
-首先在src目录下新建一个common目录用来存放公用的组件，新建scroll文件夹，然后在scroll文件夹下新建Scroll.js和scroll.css文件。先来分析一下怎么设计这个Scroll组件。
-better-scroll的原理就是外层一个固定高度的元素，这个元素有一个子元素，当子元素的高度超过父元素时就可以发生滚动。
-那么子元素里面的内容从何而来？React为我们提供了一个props的children属性用来获取组件的子组件，这样就可以用Scroll组件去包裹需要滚动的内容。
-在Scroll组件内部的列表，会随着增加或减少原生而发生变化，这个时候元素的高度也会发生变化，better-scroll需要重新计算高度，better-scroll为我们提供了一个refresh（刷新）方法用来重新计算以保证正常滚动，组件发生变化会触发React的componentDidUpdate周期函数，所以我们在这个函数里面对better-scroll进行刷新操作，同时需要一个props来告诉Scroll是否刷新。某些情况下我们需要手动调用Scroll组件去刷新better-scroll，这里对外暴露一个Scroll组件的refresh方法。better-scroll默认是禁止点击的，需要提供一个控制是否点击的props，为了监听滚动Scroll需要对外暴露一个函数，便于使用Scroll的组件监听滚动进行其他操作。当组件销毁时我们把better-scroll绑定的事件取消以及better-scroll实例给销毁掉，释放资源
-安装better-scroll
-
-    npm install better-scroll@1.5.5 --save
-
 
 ##### 图片懒加载
 当用户滚动列表，图片显示出来时才加载
 react-lazyload库其实是组件的懒加载，用它来实现图片懒加载
 
-
-取得专辑封面图片地址：
+##### 取得专辑封面图片地址
 ![专辑封面](./screenshot/album.png)
 
 
-
-专辑详情相关数据：
+##### 专辑详情相关数据
 ![专辑详情](./screenshot/album_data.png)
-
-<br/>
 
 
 #### Redux
 
-Redux用于状态管理，用一个单独的常量状态树（对象）来管理保存整个应用的状态，这个对象不能直接被修改。
+Redux用于**状态管理**，用一个单独的常量状态树（对象）来管理保存整个应用的状态，这个对象不能直接被修改。
 
 在我们的应用中有很多歌曲列表页，点击列表页的歌曲就会播放点击的歌曲，同时列表页还有播放全部按钮，点击后当前列表的所有歌曲会添加到播放列表中，每一个歌曲列表都是一个组件，相互独立，没有任何关系。歌曲播放组件需要播放的歌曲，歌曲列表还有一个是否显示播放页属性，它们统一使用redux来管理.
 
 为了达到背景播放的目的，将歌曲播放组件放置到App组件内路由相关组件外，也就是每个列表页组件最外层的组件，当App组件挂载后，播放组件会一直存在整个应用中不会被销毁（除退出应用程序之外）。
 
 react-redux库包含了容器组件和展示组件相分离的开发思想，在最顶层组件使用redux，其余内部组件仅仅用来展示，所有数据通过props传入
-说明	容器组件	展示组件
-位置	最顶层，路由处理	中间和子组件
-读取数据	从 Redux 获取 state	从 props 获取数据
-修改数据	向 Redux 派发 actions	从 props 调用回调函数
+
+| 说明        | 容器组件    |  展示组件  |
+| --------   | -----:   | :----: |
+| 读取数据  | 从 Redux 获取 state  | 从 props 获取数据    |
+| 修改数据        | 向 Redux 派发 actions      |   从 props 调用回调函数    |
 
 
-react-redux提供了Provider组件和connect方法。Provider用来传递store，connect用来将组件连接到redux，任何一个从 connect() 包装好的组件都可以得到一个 dispatch 方法作为组件的 props，以及得到全局 state 中所需的任何内容
+react-redux提供了**Provider**组件和**connect**方法帮助Redux和React进行绑定。
+Provider接收一个store作为props，用来**传递store**，它是整个Redux应用的顶层组件；
+connect提供了在整个React应用的**任意组件中获取store中数据**的功能，用来将组件连接到redux，任何一个从 connect() 包装好的组件都可以得到一个 dispatch 方法作为组件的 props，以及得到全局 state 中所需的任何内容
 

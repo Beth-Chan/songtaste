@@ -2,8 +2,7 @@ import {connect} from "react-redux"
 import {showPlayer, changeSong, setSongs} from "../redux/actions"
 import Album from "../components/album/Album"
 
-// UI组件
-// 映射dispatch到props上
+// 把UI组件中的用户动作转化为派送给Store的动作
 const mapDispatchToProps = (dispatch) => ({
 	showMusicPlayer: (status) => {
 		dispatch(showPlayer(status));
