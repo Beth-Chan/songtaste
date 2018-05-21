@@ -7,6 +7,7 @@ class Progress extends React.Component {
 	componentDidUpdate() {
 		// 解决组件更新后不能正确获取总进度长问题，组件更新后重新获取进度条总宽度
 		if (!this.progressBarWidth) {
+			// 进度条总宽度通过获取进度条这个DOM元素对象的offsetWidth
 			this.progressBarWidth = ReactDOM.findDOMNode(this.refs.progressBar).offsetWidth;
 		}
 	}
@@ -38,7 +39,7 @@ class Progress extends React.Component {
 			progressBtnDOM.addEventListener("touchmove", (e) => {
 				// 阻止有些浏览器触摸移动时窗口会前进后退的默认行为
 				e.preventDefault();
-
+				// touches表示当前跟踪的触摸操作的touch对象的数组
 				let touch = e.touches[0];
 				// 拖拽距离
 				let diffX = touch.clientX - downX;
@@ -49,7 +50,7 @@ class Progress extends React.Component {
 				} else if (btnLeft < 0) {
 					btnLeft = 0;
 				}
-				// 设置按钮left值
+				// target：触摸的DOM节点目标；设置按钮left值
 				touch.target.style.left = btnLeft + "px";
 				// 设置进度width值
 				progressDOM.style.width = btnLeft / this.progressBarWidth * 100 + "%";

@@ -18,7 +18,7 @@ const mapStateToProps = (state) => ({
 // 映射用户动作
 const mapDispatchToProps = (dispatch) => ({
     showMusicPlayer: (status) => {
-        // Store上的dispatch函数派发action对象
+        // Store上的dispatch函数派发action对象，并返回这个action，这是唯一能改变store中数据的方式
         dispatch(showPlayer(status));
     },
     changeCurrentSong: (song) => {

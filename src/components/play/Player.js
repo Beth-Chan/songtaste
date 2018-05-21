@@ -12,7 +12,7 @@ class Player extends React.Component {
 	constructor(props) {
 		super(props);
 
-		// 当前播放歌曲
+		// 首先实例化一个Song对象；当前播放歌曲
 		this.currentSong = new Song( 0, "", "", "", 0, "", "");
 		// 当前播放歌曲索引
 		this.currentIndex = 0;
@@ -48,7 +48,7 @@ class Player extends React.Component {
 		this.playerDOM = ReactDOM.findDOMNode(this.refs.player);
 		this.playerBgDOM = ReactDOM.findDOMNode(this.refs.playerBg);
 
-        // 给audio元素添加canplay和timeupdate事件
+        // 给audio元素添加canplay事件，当浏览器能够开始播放指定的音频时触发
 		this.audioDOM.addEventListener("canplay", () => {
 				this.audioDOM.play();
 				this.startImgRotate();
@@ -59,16 +59,18 @@ class Player extends React.Component {
 			
 		}, false);
 
+		// 给audio元素添加timeupdate 事件，在音频播放位置发生改变时触发
 		this.audioDOM.addEventListener("timeupdate", () => {
 			if (this.state.playStatus === true) {
 				this.setState({
+					// 播放进度即当前播放时间除以音频长度
 					playProgress: this.audioDOM.currentTime / this.audioDOM.duration,
 					currentTime: this.audioDOM.currentTime
 				});
 			}
 		}, false);
 
-		// 给audio添加ended事件，进行播放完成后的处理
+		// 给audio添加ended事件，在音频播放完成后触发，进行播放完成后的处理
 		this.audioDOM.addEventListener("ended", () => {
 			if (this.props.playSongs.length > 1) {
 				let currentIndex = this.currentIndex;
@@ -114,6 +116,7 @@ class Player extends React.Component {
 		// error事件处理
 		this.audioDOM.addEventListener("error", () => {alert("加载歌曲出错！")}, false);
 	}
+
 	/**
 	 * 播放或暂停 ES7的属性初始化语法（property initializers syntax)
 	 */
@@ -140,6 +143,7 @@ class Player extends React.Component {
 	previous = () => {
 		// 如果当前只有一首歌曲的时候播放模式不起作用
 		if (this.props.playSongs.length > 0 && this.props.playSongs.length !== 1) {
+			// 改变当前播放歌曲的索引就可以了
 			let currentIndex = this.currentIndex;
 			if (this.state.currentPlayMode === 0) {  // 列表播放
 				if(currentIndex === 0){
@@ -157,7 +161,7 @@ class Player extends React.Component {
 			// 调用父组件修改当前歌曲位置
 			this.props.changeCurrentIndex(currentIndex);
 			
-			//重新加载歌曲
+			// 重新加载歌曲
 			//this.audioDOM.load();
 		}
 	}
@@ -167,23 +171,23 @@ class Player extends React.Component {
 	next = () => {
 		if (this.props.playSongs.length > 0  && this.props.playSongs.length !== 1) {
 			let currentIndex = this.currentIndex;
-			if (this.state.currentPlayMode === 0) {  //列表播放
+			if (this.state.currentPlayMode === 0) {  // 列表播放
 				if(currentIndex === this.props.playSongs.length - 1){
 					currentIndex = 0;
 				}else{
 					currentIndex = currentIndex + 1;
 				}
-			} else if (this.state.currentPlayMode === 1) {  //单曲循环
+			} else if (this.state.currentPlayMode === 1) {  // 单曲循环
 				currentIndex = this.currentIndex;
-			} else {  //随机播放
+			} else {  // 随机播放
 				let index = parseInt(Math.random() * this.props.playSongs.length, 10);
 				currentIndex = index;
 			}
 			this.props.changeCurrentSong(this.props.playSongs[currentIndex]);
-			//调用父组件修改当前歌曲位置
+			// 调用父组件修改当前歌曲位置
 			this.props.changeCurrentIndex(currentIndex);
 
-			//重新加载歌曲
+			// 重新加载歌曲
 			//this.audioDOM.load();
 		}
 	}
@@ -192,8 +196,10 @@ class Player extends React.Component {
 	 */
 	startImgRotate = () => {
 		if (this.singerImgDOM.className.indexOf("rotate") === -1) {
+			// 添加rotate样式
 			this.singerImgDOM.classList.add("rotate");
 		} else {
+			// 就是CSS3的animation-play-state属性，通过JavaScript的方式播放动画
 			this.singerImgDOM.style["webkitAnimationPlayState"] = "running";
 			this.singerImgDOM.style["animationPlayState"] = "running";
 		}
@@ -202,6 +208,7 @@ class Player extends React.Component {
 	 * 停止旋转图片
 	 */
 	stopImgRotate = () => {
+		// 通过JavaScript的方式在播放过程中暂停动画
 		this.singerImgDOM.style["webkitAnimationPlayState"] = "paused";
 		this.singerImgDOM.style["animationPlayState"] = "paused";
 	}
@@ -357,6 +364,7 @@ class Player extends React.Component {
 						</div>
 					</div>
 					<div className="player-bg" ref="playerBg"></div>
+					{/* 通过HTML5的audio标签实现音频播放 */}
 					<audio ref="audio"></audio>
 				</div>
 				</CSSTransition>
