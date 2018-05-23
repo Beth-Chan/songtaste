@@ -21,8 +21,8 @@ const PARAM = {
  */
 const OPTION = {
     // jsonp回调函数名，如不需要jsonp调用，将format参数值修改为json并且去掉jsonpCallback参数 
-    param: "jsonpCallback",
-    prefix: "callback"
+    param: "jsonpCallback", // qq音乐的jsonp callback是叫jsonpCallback
+    prefix: "callback" // callback的前缀
 };
 
 /**

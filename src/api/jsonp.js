@@ -1,9 +1,11 @@
 import originJsonp from "jsonp";
 
-/* 使用ES6的Promise对象将jsonp代码封装成同步代码形式，这个函数返回一个Promise对象 */
+/* 用ES6的话，很少去用回调函数的方法，更常用ES6的Promise；Promise对象将jsonp代码封装成同步代码形式，这个函数返回一个Promise对象 */
+// 用data是因为：通常传给服务端的是一个url地址，这个url往往是查询字符串拼接而成，jsonp这个库需要先把url拼好，查询字符串通过data拼接到url
 let jsonp = (url, data, option) => {
     // 在Promise构造函数内调用jsonp，请求成功时调用resolve函数把data的值传出去，请求错误时调用reject函数把err的值传出去。
     return new Promise((resolve, reject) => {
+        // 使用jsonp这个库的API，详情可看github地址：https://github.com/webmodules/jsonp
         originJsonp(buildUrl(url, data), option, (err, data) => {
             if (!err) {
                 resolve(data);
@@ -14,7 +16,7 @@ let jsonp = (url, data, option) => {
     });
 };
 
-// 所有的query param通过data加到url后，最后变成xxxx?参数名1=参数值1&参数名2=参数值2这种形式.
+// 所有的query string param通过data加到url后，最后变成xxxx?参数名1=参数值1&参数名2=参数值2这种形式.
 function buildUrl(url,data) {
     let params = [];
     for (var k in data) { // 把data遍历放进params数组
@@ -29,4 +31,5 @@ function buildUrl(url,data) {
     return url;
 }
 
+// 对外暴露一个函数
 export default jsonp;

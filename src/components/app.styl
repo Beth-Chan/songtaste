@@ -1,5 +1,5 @@
 .app
-  width: 100%
+  width: 100% // 整个要100%
   height: 100%
   color: black
   background-color: white
@@ -14,25 +14,30 @@
       vertical-align: middle
       margin-top: -5px
     .app-title
+      // h1是块级元素，要和logo图片排成一行，所以加了inline-block
       display: inline-block
       margin-left: 10px
       font-size: 18px
       font-weight: 300
   .music-tab
+    // 三个Tab采用flex布局
     display: flex
     height: 30px
     line-height: 30px
     text-align: center
     color: black
     .tab-item
+      // 三个Tab等分自适应宽度
       flex: 1
       .nav-link
+        // NavLink底层是a标签，行内标签转成块级标签
         display: block
-        color: inherit
-        &.active
+        color: inherit // 如果不加就会有a链接的颜色
+        &.active // Tab点击时的样式
             color: rgb(247, 126, 27)
-            border-bottom: 2px solid rgb(247, 126, 27)
+            border-bottom: 2px solid rgb(247, 126, 27) 
   .music-view
+    // 底部的迷你播放器采用固定布局
     position: fixed
     top: 83px
     left: 0
