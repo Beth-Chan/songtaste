@@ -106,24 +106,29 @@ npm i stylus stylus-loader -SD
 加上reset.styl(删除Yahoo的reset.css中不用的一些标签)
 
 三个Tab对应三个路由，采用flex布局，自适应屏幕宽度
+<br>
 ![logo](./screenshot/songtaste_title.jpg)
 <br>
 
 ##### 数据抓取
 
-用chrome浏览器打开手机调试模式，打开QQ音乐移动端地址：m.y.qq.com。打开后点击Network，然后点击XHR，可以看到有一个ajax请求。点开后，选择preview，红色框内就是我们最后需要的轮播数据
+用chrome浏览器打开手机调试模式，打开QQ音乐移动端地址：m.y.qq.com。打开后点击Network，然后点击JS。点开后，选择preview，红色框内就是我们最后需要的轮播数据
 ![轮播图请求](./screenshot/slider_req.png)
 
 Response也能看到数据，双击此处可看到json数据：
 ![json数据](./screenshot/jsonp.jpg)
+<br>
+
 部分内容如下：
 ![json数据](./screenshot/url.jpg)
 
-还可以查看查询字符串等：
+还可以查看查询字符串等：<br>
 ![query string](./screenshot/queryString.jpg)
 
 ![json数据](./screenshot/jsonp1.jpg)
 
+XHR可看到所有查询字符串：<br>
+![query string](./screenshot/ajax_queryString.jpg)
 
 复制上面json数据的url地址：
 https://c.y.qq.com/musichall/fcgi-bin/fcg_yqqhomepagerecommend.fcg?g_tk=5381&uin=0&format=json&inCharset=utf-8&outCharset=utf-8&notice=0&platform=h5&needNewCode=1&_=1515738030186
@@ -134,9 +139,9 @@ https://c.y.qq.com/musichall/fcgi-bin/fcg_yqqhomepagerecommend.fcg
 ![轮播图请求](./screenshot/newsong1.png)
 切换到Header头部：
 ![轮播图请求](./screenshot/newsong2.png)
-<br>
+<br><br>
 
-##### JSONP与Promise
+### JSONP与Promise
 ES6提供了Promise对象，它可以将异步代码以同步的形式编写
 
 这里接口用的是ajax请求，用这种方式存在跨域限制，前端是不能直接请求的，QQ音乐人性化的基本上大部分接口都支持jsonp请求。为了使用jsonp，这里使用一款<b>jsonp</b>插件，首先安装jsonp依赖
@@ -145,8 +150,9 @@ ES6提供了Promise对象，它可以将异步代码以同步的形式编写
 
 插件github地址：https://github.com/webmodules/jsonp
 #### JSONP原理
-动态生成一个\<script\>标签，其src由**接口url**、**请求参数**、**callback函数名**拼接而成，利用\<script\>标签没有跨域限制的特性实现跨域请求。
+动态生成一个\<script\>标签，其src由**接口url**、**请求参数**、**callback函数名**拼接而成，利用\<script\>标签没有跨域限制的特性实现跨域请求。<br>
 
+api文件夹下的jsonp.js:
 ```
 import originJsonp from "jsonp";
 
@@ -164,7 +170,7 @@ let jsonp = (url, data, option) => {
     });
 };
 
-// 所有的query param通过data加到url后，最后变成xxxx?参数名1=参数值1&参数名2=参数值2这种形式.
+// 所有的query string param通过data加到url后，最后变成xxxx?参数名1=参数值1&参数名2=参数值2这种形式.
 function buildUrl(url,data) {
     let params = [];
     for (var k in data) { // 把data遍历放进params数组
@@ -185,13 +191,50 @@ export default jsonp;
 #### API
 为了养成好的编程习惯呢，通常会把接口请求代码存放到api目录下面，很多人会把接口的url一同写在请求的代码中，这里呢，我们把url抽取出来放到单独的一个文件里面便于管理。
 
-api文件夹下的Recommend.js和song.js多次使用Object.assign()方法.
+api文件夹下的recommend.js和song.js多次使用Object.assign()方法.
 Object.assign() 方法是用于将所有可枚举属性的值从一个或多个源对象复制到目标对象。它将返回目标对象。
 Object.assign(target, ...sources)
 target目标对象。
-sources源对象。
+sources源对象。<br>
 
-Recommend.js中：
+api文件夹下的config.js：
+```
+const URL = {
+    carousel: "https://c.y.qq.com/musichall/fcgi-bin/fcg_yqqhomepagerecommend.fcg",
+    // 完整是 https://c.y.qq.com/musichall/fcgi-bin/fcg_yqqhomepagerecommend.fcg?g_tk=5381&uin=0&format=json&inCharset=utf-8&outCharset=utf-8&notice=0&platform=h5&needNewCode=1&_=1515763697741
+    newalbum: "https://u.y.qq.com/cgi-bin/musicu.fcg",
+    albumInfo: "https://c.y.qq.com/v8/fcg-bin/fcg_v8_album_info_cp.fcg",
+    songVkey: "https://c.y.qq.com/base/fcgi-bin/fcg_music_express_mobile3.fcg"
+};
+
+/**
+ * QQ音乐多个接口的公用参数
+ */
+const PARAM = {
+    format: "jsonp",
+    inCharset: "utf-8",
+    outCharset: "utf-8",
+    notice: 0
+};
+
+/**
+ * 选项
+ */
+const OPTION = {
+    // jsonp回调函数名，如不需要jsonp调用，将format参数值修改为json并且去掉jsonpCallback参数 
+    param: "jsonpCallback", // qq音乐的jsonp callback是叫jsonpCallback
+    prefix: "callback" // callback的前缀
+};
+
+/**
+ * 接口code码
+ */
+const CODE_SUCCESS = 0;
+
+export {URL, PARAM, OPTION, CODE_SUCCESS};
+```
+
+api文件夹下的recommend.js：
 ```
 /**
  * Object.assign方法合并对象，将接口的公共参数和轮播图特有的参数合并，相同的属性值会被覆盖
@@ -243,16 +286,21 @@ export function getAlbumInfo(albumMid) {
 ```
 
 
-发送接口请求在<b>componentDidMount</b>这个生命周期函数中，因为应该在**组件挂载完成后进行请求**，防止异部操作阻塞UI。
+**发送接口请求**在<b>componentDidMount</b>这个生命周期函数中，因为应该在**组件挂载完成后进行请求**，防止异部操作阻塞UI。
 关于React的一些生命周期函数：
 一般的，我们会在<b>componentDidMount</b>**函数中获取DOM，对DOM进行操作**。React每次更新都会调用render函数，使用<b>shouldComponentUpdate</b>可以帮助我们控制组件是否更新，返回true组件会更新，返回false就会阻止更新，这也是**性能优化**的一种手段。<b>componentWillUnmount</b>通常用来销毁一些资源，比如**setInterval、setTimeout**函数调用后可以在该周期函数内进行资源释放。
 
+在components中的Recommend.js编写：
+![slider](./screenshot/slider.jpg)
 
 ##### swiper
 页面轮播使用swiper插件实现，swiper更多用法见官网：www.swiper.com.cn
 
+##### better-scroll
+专辑列表滚动使用better-scroll插件实现，better-scroll更多用法见github地址：https://github.com/ustbhuangyi/better-scroll
+
 ##### 图片懒加载
-当用户滚动列表，图片显示出来时才加载
+当用户滚动列表，图片显示出来时才加载，用的是react-lazyload库，详情看github地址：https://github.com/jasonslyvia/react-lazyload<br>
 react-lazyload库其实是组件的懒加载，用它来实现图片懒加载
 
 ##### 取得专辑封面图片地址
@@ -261,9 +309,9 @@ react-lazyload库其实是组件的懒加载，用它来实现图片懒加载
 
 ##### 专辑详情相关数据
 ![专辑详情](./screenshot/album_data.png)
+<br><br><br>
 
-
-#### Redux
+### Redux
 
 Redux用于**状态管理**，用一个单独的常量状态树（对象）来管理保存整个应用的状态，这个对象不能直接被修改。
 
