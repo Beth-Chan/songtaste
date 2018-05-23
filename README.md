@@ -45,7 +45,7 @@ A dev server that lints for common errors.
 public/index.html 是启动http服务器的首页
 index.html文件包含挂载点：
 ```
-<div id="root"></div>
+<div id="App"></div>
 ```
 （2）<strong>App.js</strong>：在src下创建一个components文件夹，把App.js和app.css移到此文件夹下（App.js是主组件）
 
@@ -103,9 +103,10 @@ npm i stylus stylus-loader -SD
 
 ##### 其他
 
-加上reset.styl
+加上reset.styl(删除Yahoo的reset.css中不用的一些标签)
 
 三个Tab对应三个路由，采用flex布局，自适应屏幕宽度
+![logo](./screenshot/songtaste_title.jpg)
 <br>
 
 ##### 数据抓取
@@ -113,9 +114,20 @@ npm i stylus stylus-loader -SD
 用chrome浏览器打开手机调试模式，打开QQ音乐移动端地址：m.y.qq.com。打开后点击Network，然后点击XHR，可以看到有一个ajax请求。点开后，选择preview，红色框内就是我们最后需要的轮播数据
 ![轮播图请求](./screenshot/slider_req.png)
 
-复制出来是这样：
+Response也能看到数据，双击此处可看到json数据：
+![json数据](./screenshot/jsonp.jpg)
+部分内容如下：
+![json数据](./screenshot/url.jpg)
+
+还可以查看查询字符串等：
+![query string](./screenshot/queryString.jpg)
+
+![json数据](./screenshot/jsonp1.jpg)
+
+
+复制上面json数据的url地址：
 https://c.y.qq.com/musichall/fcgi-bin/fcg_yqqhomepagerecommend.fcg?g_tk=5381&uin=0&format=json&inCharset=utf-8&outCharset=utf-8&notice=0&platform=h5&needNewCode=1&_=1515738030186
-只取问号前面的部分：
+只取问号前面的部分：（即图中红框的url）
 https://c.y.qq.com/musichall/fcgi-bin/fcg_yqqhomepagerecommend.fcg
 
 点击Chrome调试界面左上角的第二个图标切换到桌面版（或在Chrome浏览器调试界面显示区的右上角选择add device type，然后把mobile切换成桌面版刷新），因为最新专辑只有桌面版才有
@@ -271,3 +283,4 @@ react-redux提供了**Provider**组件和**connect**方法帮助Redux和React进
 Provider接收一个store作为props，用来**传递store**，它是整个Redux应用的顶层组件；
 connect提供了在整个React应用的**任意组件中获取store中数据**的功能，用来将组件连接到redux，任何一个从 connect() 包装好的组件都可以得到一个 dispatch 方法作为组件的 props，以及得到全局 state 中所需的任何内容
 
+容器型組件（此项目中的container文件夹，有connect方法）和展示型組件（此项目中的components文件夹）最直观区别在于是否使用connect方法让组件从Redux的状态树中获取数据（即是否感知Redux的存在）
